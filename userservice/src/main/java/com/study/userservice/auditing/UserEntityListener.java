@@ -4,7 +4,6 @@ import com.study.userservice.entity.User;
 import com.study.userservice.entity.UserHistory;
 
 import jakarta.persistence.EntityManager;
-import jakarta.persistence.PostPersist;
 import jakarta.persistence.PostRemove;
 import jakarta.persistence.PrePersist;
 // import jakarta.persistence.PreRemove;
@@ -16,31 +15,22 @@ public class UserEntityListener {
 
   @PrePersist
   public void prePersist(User user) {
-    System.out.println("Auditing INSERT transaction, User: " + user);
     perform(user, Action.INSERTED);
   }
 
-  @PostPersist
-  public void postPersist(User user) {
-    System.out.println("Auditing INSERT PostPersist transaction, User: " + user);
-    //    perform(user, Action.INSERTED);
-  }
+  //  @PostPersist
+  //  public void postPersist(User user) {
+  //    System.out.println("Auditing INSERT PostPersist transaction, User: " + user);
+  //    //    perform(user, Action.INSERTED);
+  //  }
 
   @PreUpdate
   public void preUpdate(User user) {
-    System.out.println("Auditing UPDATE transaction, User: " + user);
     perform(user, Action.UPDATED);
   }
 
-  //  @PreRemove
-  //  public void preRemove(User user) {
-  //    System.out.println("Auditing DELETE transaction, User: " + user);
-  //    perform(user, Action.DELETED);
-  //  }
-
   @PostRemove
   public void postRemove(User user) {
-    System.out.println("Auditing DELETE PostRemove transaction, User: " + user);
     perform(user, Action.DELETED);
   }
 

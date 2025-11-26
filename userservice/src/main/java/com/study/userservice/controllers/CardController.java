@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -32,12 +33,14 @@ public class CardController {
   }
 
   @PostMapping(path = "/card")
+  @PreAuthorize("hasRole('ADMIN')")
   public ResponseEntity<CardResponseDTO> createCard(@RequestBody CardRequestDTO cardRequestDTO) {
     CardResponseDTO cardResponseDTO = cardService.saveOne(cardRequestDTO);
     return ResponseEntity.ok(cardResponseDTO);
   }
 
   @PostMapping(path = "/cards")
+  @PreAuthorize("hasRole('ADMIN')")
   public ResponseEntity<List<CardResponseDTO>> createCards(
       @RequestBody List<CardRequestDTO> cardRequestDTOs) {
     List<CardResponseDTO> cardResponseDTO = cardService.saveMany(cardRequestDTOs);
@@ -57,6 +60,7 @@ public class CardController {
   }
 
   @PutMapping("/card/{id}")
+  @PreAuthorize("hasRole('ADMIN')")
   public ResponseEntity<CardResponseDTO> updateCard(
       @PathVariable Long id, @RequestBody CardRequestDTO cardRequestDTO) {
     CardResponseDTO cardResponseDTO = cardService.updateCard(id, cardRequestDTO);
@@ -64,25 +68,29 @@ public class CardController {
   }
 
   @GetMapping(path = "/card/random")
+  @PreAuthorize("hasRole('ADMIN')")
   public ResponseEntity<CardResponseDTO> addCard() {
     UserResponseDTO userResponseDTO = userService.getRandomUser();
     CardResponseDTO cardResponseDTO = cardService.addRandomCard(userResponseDTO);
     return ResponseEntity.ok(cardResponseDTO);
   }
 
-  @GetMapping(path = "/cards")
-  public ResponseEntity<List<CardResponseDTO>> getAllCards() {
-    List<CardResponseDTO> cardResponseDTOs = cardService.getAllCards();
+  @GetMapping(path = "/cards/{page}/{itemsPerPage}")
+  public ResponseEntity<List<CardResponseDTO>> getAllCards(
+      @PathVariable Integer page, @PathVariable Integer itemsPerPage) {
+    List<CardResponseDTO> cardResponseDTOs = cardService.getAllCards(page, itemsPerPage);
     return ResponseEntity.ok(cardResponseDTOs);
   }
 
   @DeleteMapping("/card/{id}")
+  @PreAuthorize("hasRole('ADMIN')")
   public ResponseEntity<CardResponseDTO> deleteCardById(@PathVariable Long id) {
     CardResponseDTO cardResponseDTO = cardService.deleteById(id);
     return ResponseEntity.ok(cardResponseDTO);
   }
 
   @GetMapping(path = "/card/last")
+  @PreAuthorize("hasRole('ADMIN')")
   public ResponseEntity<CardResponseDTO> deleteLastCard() {
     CardResponseDTO cardResponseDTO = cardService.delCardLast();
     return ResponseEntity.ok(cardResponseDTO);
@@ -92,5 +100,12 @@ public class CardController {
   public ResponseEntity<List<CardResponseDTO>> getCardsByUserId(@PathVariable Long id) {
     List<CardResponseDTO> cardResponseDTOs = cardService.getByUserId(id);
     return ResponseEntity.ok(cardResponseDTOs);
+  }
+
+  @GetMapping("/card/active/{id}")
+  @PreAuthorize("hasRole('ADMIN')")
+  public ResponseEntity<CardResponseDTO> changeActiveStatus(@PathVariable Long id) {
+    CardResponseDTO cardResponseDTO = cardService.changeActive(id);
+    return ResponseEntity.ok(cardResponseDTO);
   }
 }

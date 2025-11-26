@@ -3,7 +3,10 @@ package com.study.userservice.controllers;
 import java.util.List;
 import java.util.Set;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -22,6 +25,7 @@ import com.study.userservice.service.interfaces.UserService;
 @RequestMapping(path = "/api/v1")
 public class UserController {
 
+  @Autowired UserDetailsService details;
   private final UserService userService;
 
   public UserController(UserService userService) {
@@ -29,12 +33,15 @@ public class UserController {
   }
 
   @PostMapping(path = "/user")
+  @PreAuthorize("hasRole('ADMIN')")
   public ResponseEntity<UserResponseDTO> createUser(@RequestBody UserRequestDTO userRequestDTO) {
+
     UserResponseDTO userResponseDTO = userService.saveOne(userRequestDTO);
     return ResponseEntity.ok(userResponseDTO);
   }
 
   @PostMapping(path = "/users")
+  @PreAuthorize("hasRole('ADMIN')")
   public ResponseEntity<List<UserResponseDTO>> createUsers(
       @RequestBody List<UserRequestDTO> UserRequestDTOs) {
     List<UserResponseDTO> userResponseDTOs = userService.saveMany(UserRequestDTOs);
@@ -60,6 +67,7 @@ public class UserController {
   }
 
   @PutMapping("/user/{id}")
+  @PreAuthorize("hasRole('ADMIN')")
   public ResponseEntity<UserResponseDTO> updateUser(
       @PathVariable Long id, @RequestBody UserRequestDTO userRequestDTO) {
     UserResponseDTO userResponseDTO = userService.updateUser(id, userRequestDTO);
@@ -67,18 +75,21 @@ public class UserController {
   }
 
   @DeleteMapping("/user/{id}")
+  @PreAuthorize("hasRole('ADMIN')")
   public ResponseEntity<UserResponseDTO> deleteUserById(@PathVariable Long id) {
     UserResponseDTO userResponseDTO = userService.deleteById(id);
     return ResponseEntity.ok(userResponseDTO);
   }
 
   @GetMapping(path = "/admin/test")
+  @PreAuthorize("hasRole('ADMIN')")
   public ResponseEntity<List<UserResponseDTO>> addTestUser() {
     List<UserResponseDTO> userResponseDTO = userService.addTestUser();
     return ResponseEntity.ok(userResponseDTO);
   }
 
   @GetMapping(path = "/admin/dellast")
+  @PreAuthorize("hasRole('ADMIN')")
   public ResponseEntity<UserResponseDTO> deleteLastUser() {
     UserResponseDTO userResponseDTO = userService.delUserLast();
     return ResponseEntity.ok(userResponseDTO);
@@ -90,9 +101,10 @@ public class UserController {
     return ResponseEntity.ok(userResponseDTO);
   }
 
-  @GetMapping(path = "/users")
-  public ResponseEntity<List<UserResponseDTO>> getAllUsers() {
-    return ResponseEntity.ok(userService.getAllUsers());
+  @GetMapping(path = "/users/{page}/{itemsPerPage}")
+  public ResponseEntity<List<UserResponseDTO>> getAllUsers(
+      @PathVariable Integer page, @PathVariable Integer itemsPerPage) {
+    return ResponseEntity.ok(userService.getAllUsers(page, itemsPerPage));
   }
 
   @GetMapping(path = "/user/random")
@@ -116,5 +128,18 @@ public class UserController {
   @GetMapping(path = "/user/log")
   public ResponseEntity<List<UserHistory>> getUsersLog() {
     return ResponseEntity.ok(userService.getUserLog());
+  }
+
+  @GetMapping("/user/active/{id}")
+  @PreAuthorize("hasRole('ADMIN')")
+  public ResponseEntity<UserResponseDTO> changeActiveStatus(@PathVariable Long id) {
+    UserResponseDTO userResponseDTO = userService.changeActive(id);
+    return ResponseEntity.ok(userResponseDTO);
+  }
+
+  @GetMapping("/user/name/{keyword}")
+  public ResponseEntity<List<UserResponseDTO>> getUserById(@PathVariable String keyword) {
+    List<UserResponseDTO> userResponseDTO = userService.getNamesContainsText(keyword);
+    return ResponseEntity.ok(userResponseDTO);
   }
 }

@@ -19,5 +19,7 @@ public class CacheStartupClearer {
     //      cacheManager.getCache(n).clear());
     cacheManager.getCache("users").clear();
     cacheManager.getCache("cards").clear();
+    cacheManager.getCache("all").clear();
+    cacheManager.getCache("allcards").clear();
   }
 }

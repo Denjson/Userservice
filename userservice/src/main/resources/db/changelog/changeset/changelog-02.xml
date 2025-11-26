@@ -12,7 +12,7 @@
         http://www.liquibase.org/xml/ns/pro/liquibase-pro-latest.xsd">
 
     <changeSet  id="1"  author="denrod">
-        <createTable  tableName="card_info" schemaName="den_schema">  
+        <createTable  tableName="payment_cards" schemaName="den_schema">  
            <column  name="id"  type="bigint"  autoIncrement="true">  
                <constraints  primaryKey="true"  nullable="false"/>
            </column>
@@ -21,13 +21,12 @@
            <column  name="holder"  type="varchar(15)"/>
            <column  name="expiration_date"  type="date"/>
            <column  name="active"  type="BOOLEAN"/>
-  	    <column  name="email"  type="varchar(20)"/> 
         </createTable> 
     </changeSet>  
 
     <changeSet  id="2"  author="denrod">
     <addForeignKeyConstraint
-            baseTableName="card_info"
+            baseTableName="payment_cards"
             baseTableSchemaName="den_schema"
 		    baseColumnNames="user_id"
             constraintName="fk_user_id"

@@ -13,7 +13,7 @@
     <createIndex clustered= "true"
     		  schemaName="den_schema"
               indexName="idx_number"
-              tableName="card_info"
+              tableName="payment_cards"
               unique="true">
       <column name="number"/>
     </createIndex>

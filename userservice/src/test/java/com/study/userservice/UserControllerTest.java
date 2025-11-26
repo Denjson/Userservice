@@ -1,6 +1,5 @@
 package com.study.userservice;
 
-import static io.restassured.RestAssured.given;
 // import static org.junit.Assert.assertNotNull;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
@@ -8,20 +7,29 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import java.security.Key;
 import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.List;
 
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
 
+import com.study.userservice.auth.Role;
 import com.study.userservice.entity.User;
 import com.study.userservice.exceptions.IdNotFoundException;
 import com.study.userservice.repository.UserRepository;
 import com.study.userservice.service.interfaces.UserService;
 
+import io.github.cdimascio.dotenv.Dotenv;
+import io.jsonwebtoken.JwtBuilder;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.io.Decoders;
+import io.jsonwebtoken.security.Keys;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 import io.restassured.response.Response;
@@ -43,10 +51,30 @@ class UserControllerTest extends AbstractIntegrationTest {
   UserService userService;
   UserRepository userRepository;
 
+  static String token;
+
   @Autowired
   public UserControllerTest(UserService userService, UserRepository userRepository) {
     this.userService = userService;
     this.userRepository = userRepository;
+  }
+
+  @BeforeAll
+  static void generateToken() {
+    Dotenv dotenv = Dotenv.configure().ignoreIfMissing().ignoreIfMalformed().load();
+    String key = dotenv.get("MY_SECRET_KEY");
+    String str = new String(Decoders.BASE64.decode(key));
+    byte[] keyBytes = str.getBytes();
+    Key readyKey = Keys.hmacShaKeyFor(keyBytes);
+    JwtBuilder builder =
+        Jwts.builder()
+            .setSubject("userT@m.com")
+            .setIssuedAt(new Date())
+            .setExpiration(new Date(System.currentTimeMillis() + 3600000)) // 1 hour expiration
+            .claim("Role", "ADMIN")
+            .claim("UserId", "8")
+            .signWith(readyKey);
+    token = builder.compact();
   }
 
   @BeforeEach
@@ -63,7 +91,8 @@ class UserControllerTest extends AbstractIntegrationTest {
         """;
 
     Response responseController =
-        given()
+        RestAssured.given()
+            .header("Authorization", "Bearer " + token)
             .contentType(ContentType.JSON)
             .body(payload)
             .when()
@@ -86,7 +115,8 @@ class UserControllerTest extends AbstractIntegrationTest {
         """;
 
     Response responseController =
-        given()
+        RestAssured.given()
+            .header("Authorization", "Bearer " + token)
             .contentType(ContentType.JSON)
             .body(payload)
             .when()
@@ -105,7 +135,8 @@ class UserControllerTest extends AbstractIntegrationTest {
     Long id = userService.addTestUser().getLast().getId();
 
     Response responseController =
-        given()
+        RestAssured.given()
+            .header("Authorization", "Bearer " + token)
             .contentType(ContentType.JSON)
             .when()
             .get("/api/v1/user/" + id)
@@ -123,7 +154,8 @@ class UserControllerTest extends AbstractIntegrationTest {
     Long id1 = userService.addTestUser().getLast().getId();
     Long id2 = userService.addTestUser().getLast().getId();
     Response responseController =
-        given()
+        RestAssured.given()
+            .header("Authorization", "Bearer " + token)
             .contentType(ContentType.JSON)
             .when()
             .get("/api/v1/users/" + id1 + "," + id2)
@@ -141,7 +173,8 @@ class UserControllerTest extends AbstractIntegrationTest {
     String email = userService.addTestUser().getLast().getEmail();
 
     Response responseController =
-        given()
+        RestAssured.given()
+            .header("Authorization", "Bearer " + token)
             .contentType(ContentType.JSON)
             .when()
             .get("/api/v1/user/email/" + email)
@@ -165,7 +198,8 @@ class UserControllerTest extends AbstractIntegrationTest {
         """;
 
     Response responseController =
-        given()
+        RestAssured.given()
+            .header("Authorization", "Bearer " + token)
             .contentType(ContentType.JSON)
             .body(payload)
             .when()
@@ -183,7 +217,8 @@ class UserControllerTest extends AbstractIntegrationTest {
   void deleteUserById() {
     Long id = userService.addTestUser().getLast().getId();
     Response responseController =
-        given()
+        RestAssured.given()
+            .header("Authorization", "Bearer " + token)
             .contentType(ContentType.JSON)
             .when()
             .delete("/api/v1/user/" + id)
@@ -199,13 +234,14 @@ class UserControllerTest extends AbstractIntegrationTest {
   @Test
   void addTestUserTest() {
     Response responseController =
-        given()
+        RestAssured.given()
+            .header("Authorization", "Bearer " + token)
             .contentType(ContentType.JSON)
             .when()
             .get("/api/v1/admin/test")
             .then()
             .statusCode(200)
-            .body(".", hasSize(1))
+            .body(".", hasSize(2))
             .extract()
             .response();
     assertNotNull(responseController.asString());
@@ -216,13 +252,14 @@ class UserControllerTest extends AbstractIntegrationTest {
   void deleteLastUserTest() {
     userService.addTestUser();
     Response responseController =
-        given()
+        RestAssured.given()
+            .header("Authorization", "Bearer " + token)
             .contentType(ContentType.JSON)
             .when()
             .get("api/v1/admin/dellast")
             .then()
             .statusCode(200)
-            .body("name", equalTo("X CODE"))
+            .body("name", equalTo("NeedName"))
             .extract()
             .response();
     assertNotNull(responseController.asString());
@@ -233,13 +270,14 @@ class UserControllerTest extends AbstractIntegrationTest {
   void getLastUserTest() {
     userService.addTestUser();
     Response responseController =
-        given()
+        RestAssured.given()
+            .header("Authorization", "Bearer " + token)
             .contentType(ContentType.JSON)
             .when()
             .get("api/v1/user/last")
             .then()
             .statusCode(200)
-            .body("name", equalTo("X CODE"))
+            .body("name", equalTo("NeedName"))
             .extract()
             .response();
     assertNotNull(responseController.asString());
@@ -250,15 +288,18 @@ class UserControllerTest extends AbstractIntegrationTest {
   void getAllUsersTest() {
     List<User> users =
         List.of(
-            new User(null, "John", "Connor", LocalDateTime.now(), "john@mail.com", true),
-            new User(null, "Dennis", "Nix", LocalDateTime.now(), "dennis@mail.com", true));
+            new User(
+                null, "John", "Connor", LocalDateTime.now(), "john@mail.com", true, Role.ADMIN),
+            new User(
+                null, "Dennis", "Nix", LocalDateTime.now(), "dennis@mail.com", true, Role.ADMIN));
     userRepository.saveAll(users);
-    assertTrue(userService.getAllUsers().size() == 2);
+    assertTrue(userService.getAllUsers(0, 10).size() == 2);
     Response responseController =
-        given()
+        RestAssured.given()
+            .header("Authorization", "Bearer " + token)
             .contentType(ContentType.JSON)
             .when()
-            .get("/api/v1/users")
+            .get("/api/v1/users/0/2")
             .then()
             .statusCode(200)
             .body(".", hasSize(2))
@@ -271,13 +312,14 @@ class UserControllerTest extends AbstractIntegrationTest {
   void getRandomUserTest() {
     userService.addTestUser();
     Response responseController =
-        given()
+        RestAssured.given()
+            .header("Authorization", "Bearer " + token)
             .contentType(ContentType.JSON)
             .when()
             .get("api/v1/user/random")
             .then()
             .statusCode(200)
-            .body("name", equalTo("X CODE"))
+            .body("active", equalTo(true))
             .extract()
             .response();
     assertNotNull(responseController.asString());
@@ -288,13 +330,14 @@ class UserControllerTest extends AbstractIntegrationTest {
   void getRangeIdsTest() {
     userService.addTestUser();
     Response responseController =
-        given()
+        RestAssured.given()
+            .header("Authorization", "Bearer " + token)
             .contentType(ContentType.JSON)
             .when()
             .get("api/v1/user/native/0")
             .then()
             .statusCode(200)
-            .body(".", hasSize(1))
+            .body(".", hasSize(2))
             .extract()
             .response();
     assertNotNull(responseController.asString());
@@ -305,7 +348,8 @@ class UserControllerTest extends AbstractIntegrationTest {
   void findByJPQLTest() {
     userService.addTestUser();
     Response responseController =
-        given()
+        RestAssured.given()
+            .header("Authorization", "Bearer " + token)
             .contentType(ContentType.JSON)
             .when()
             .get("api/v1/user/jpql/MANCODE")
@@ -321,12 +365,30 @@ class UserControllerTest extends AbstractIntegrationTest {
   @Test
   void testDeleteUser() {
     User userToDel =
-        new User(null, "John", "Connor", LocalDateTime.now(), "tomjohn@mail.com", true);
+        new User(null, "John", "Connor", LocalDateTime.now(), "tomjohn@mail.com", true, Role.ADMIN);
     userRepository.save(userToDel);
     assertNotNull(userService.getById(userToDel.getId()));
     userService.deleteById(userToDel.getId());
     assertThrows(IdNotFoundException.class, () -> userService.getById(userToDel.getId()));
     printCurrentMethodName();
+  }
+
+  @Test
+  void changeActiveStatusTest() {
+    Long id = userService.addTestUser().getLast().getId();
+    Response responseController =
+        RestAssured.given()
+            .header("Authorization", "Bearer " + token)
+            .contentType(ContentType.JSON)
+            .when()
+            .get("api/v1/user/active/" + id)
+            .then()
+            .statusCode(200)
+            .body("active", equalTo(false))
+            .extract()
+            .response();
+    assertNotNull(responseController.asString());
+    printCurrentMethodName(responseController);
   }
 
   public static void printCurrentMethodName() {

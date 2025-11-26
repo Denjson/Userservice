@@ -31,6 +31,7 @@
   	    	<constraints  nullable="false"/>  
   	    </column>  
   	    <column  name="active"  type="BOOLEAN"/>
+  	    <column  name="role"  type="varchar(20)"/>  
         </createTable> 
     </changeSet>  
     

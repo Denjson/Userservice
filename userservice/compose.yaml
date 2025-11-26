@@ -30,7 +30,7 @@ services:
     - "5432:5432"
 
   app:
-    container_name: userservice
+    container_name: user-service
     build: . # Or specify an image if you're not building locally
     ports:
       - "8080:8080"

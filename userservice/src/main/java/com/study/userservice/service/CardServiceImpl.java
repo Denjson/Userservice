@@ -7,10 +7,15 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.apache.commons.collections4.IterableUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.Caching;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import com.study.userservice.dto.CardRequestDTO;
@@ -29,6 +34,7 @@ import com.study.userservice.service.interfaces.CardService;
 @Service
 public class CardServiceImpl implements CardService {
 
+  private static final Logger log = LoggerFactory.getLogger(CardServiceImpl.class);
   private final CardRepository cardRepository;
   private final UserRepository userRepository;
   private final CardMapper cardMapper;
@@ -40,11 +46,11 @@ public class CardServiceImpl implements CardService {
     this.cardMapper = cardMapper;
   }
 
-  @CacheEvict(value = "cards", key = "0")
+  @CacheEvict(value = "allcards", allEntries = true)
   public CardResponseDTO saveOne(CardRequestDTO cardRequestDTO) {
     checkCard(cardRequestDTO);
     Card card = cardRepository.save(cardMapper.toEntity(cardRequestDTO));
-    System.out.println("User found. Card added: " + cardRequestDTO.toString());
+    log.info("___User found. Card added: {}", cardRequestDTO.toString());
     return cardMapper.toDTO(card);
   }
 
@@ -63,7 +69,7 @@ public class CardServiceImpl implements CardService {
     }
   }
 
-  @CacheEvict(value = "cards", key = "0")
+  @CacheEvict(value = "allcards", allEntries = true)
   public List<CardResponseDTO> saveMany(List<CardRequestDTO> cardRequestDTOs) {
     for (CardRequestDTO cardRequestDTO : cardRequestDTOs) {
       checkCard(cardRequestDTO);
@@ -76,7 +82,7 @@ public class CardServiceImpl implements CardService {
     }
     if (usersFound.get().size() == usersFromCards.size()) {
       cardRepository.saveAll(cards);
-      System.out.println("All users found. Saved Cards: " + cards);
+      log.info("___All users found. Saved Cards: {}", cards);
       return cardMapper.toDTOs(cards);
     } else {
       throw new IdNotFoundException("Users not found with ids: " + usersFromCards);
@@ -97,13 +103,14 @@ public class CardServiceImpl implements CardService {
     if (cards.isEmpty()) {
       throw new IdNotFoundException("Cards not found with ids: " + ids);
     }
-    System.out.println("Cards found: " + cards.toString());
+    log.info("___Cards found: {}", cards);
     return cardMapper.toDTOs(cards);
   }
 
-  @Cacheable(value = "cards", key = "0")
-  public List<CardResponseDTO> getAllCards() {
-    List<Card> cards = IterableUtils.toList(cardRepository.findAll());
+  @Cacheable(value = "allcards", key = "#page + '-' + #itemsPerPage")
+  public List<CardResponseDTO> getAllCards(Integer page, Integer itemsPerPage) {
+    Pageable pageable = PageRequest.of(page, itemsPerPage, Sort.by("Id"));
+    List<Card> cards = IterableUtils.toList(cardRepository.findAll(pageable));
     if (cards.isEmpty()) {
       throw new IdNotFoundException("List of cards is empty");
     }
@@ -111,6 +118,7 @@ public class CardServiceImpl implements CardService {
     return cardResponseDTOs;
   }
 
+  //  @Cacheable(value = "cards", key = "#id")
   public List<CardResponseDTO> getByUserId(Long id) {
     List<Card> cards = cardRepository.findByUserId(id).get();
     if (cards.size() == 0) {
@@ -120,7 +128,10 @@ public class CardServiceImpl implements CardService {
   }
 
   @Caching(
-      evict = {@CacheEvict(value = "cards", key = "#id"), @CacheEvict(value = "cards", key = "0")})
+      evict = {
+        @CacheEvict(value = "cards", key = "#id"),
+        @CacheEvict(value = "allcards", allEntries = true)
+      })
   public CardResponseDTO deleteById(Long id) {
     Card card =
         cardRepository
@@ -130,21 +141,20 @@ public class CardServiceImpl implements CardService {
     return cardMapper.toDTO(card);
   }
 
-  @CacheEvict(value = "cards", key = "0")
+  @CacheEvict(value = "allcards", allEntries = true)
   public CardResponseDTO delCardLast() {
     Card card =
         cardRepository
             .findTopByOrderByIdDesc()
             .orElseThrow(() -> new IdNotFoundException("Card not found"));
-    System.out.println("Delete last card: " + card);
+    log.info("___Delete last card: {}", card);
     CardResponseDTO сardResponseDTO = cardMapper.toDTO(card);
     cardRepository.delete(card);
-
     return сardResponseDTO;
   }
 
   @CachePut(value = "cards", key = "#id")
-  @CacheEvict(value = "cards", key = "0")
+  @CacheEvict(value = "allcards", allEntries = true)
   public CardResponseDTO updateCard(Long id, CardRequestDTO cardDetails) {
     Optional<User> userOptional = userRepository.findById(cardDetails.getUserId());
     Card card =
@@ -162,15 +172,15 @@ public class CardServiceImpl implements CardService {
         card.setActive(!cardDetails.isActive());
       }
       cardRepository.save(card);
-      System.out.println("Card updated: " + card.toString());
+      log.info("___Card updated: {}", card);
     } else {
-      System.out.println("User with ID " + cardDetails.getUserId() + " not found.");
+      log.info("___User with ID: {} not found.", cardDetails.getUserId());
       throw new IdNotFoundException("User not found with id: " + cardDetails.getUserId());
     }
     return cardMapper.toDTO(card);
   }
 
-  @CacheEvict(value = "cards", key = "0")
+  @CacheEvict(value = "allcards", allEntries = true)
   public CardResponseDTO addRandomCard(UserResponseDTO userResponseDto) {
     Card card = new Card();
     card.setUserId(userResponseDto.getId());
@@ -178,8 +188,20 @@ public class CardServiceImpl implements CardService {
     card.setHolder(userResponseDto.getName());
     card.setExpirationDate(LocalDateTime.now().plusYears(2));
     card.setActive(userResponseDto.isActive());
-    System.out.println("From UserService - Card added to Random user: " + card.toString());
+    log.info("___Card added to Random user: {}", card);
     cardRepository.save(card);
+    return cardMapper.toDTO(card);
+  }
+
+  @CacheEvict(value = "allcards", allEntries = true)
+  public CardResponseDTO changeActive(Long id) {
+    Card card =
+        cardRepository
+            .findById(id)
+            .orElseThrow(() -> new IdNotFoundException("Card not found with id: " + id));
+    card.setActive(!card.isActive());
+    cardRepository.save(card);
+    log.info("___Card updated: {}", card.toString());
     return cardMapper.toDTO(card);
   }
 }

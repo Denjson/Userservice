@@ -5,6 +5,7 @@ import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Component;
 
+import com.study.userservice.auth.Role;
 import com.study.userservice.dto.UserRequestDTO;
 import com.study.userservice.dto.UserResponseDTO;
 import com.study.userservice.entity.User;
@@ -40,6 +41,7 @@ public class UserMapper {
     user.setBirthDate(userRequestDto.getBirthDate());
     user.setEmail(userRequestDto.getEmail());
     user.setActive(userRequestDto.isActive());
+    user.setRole(Role.USER);
     return user;
   }
 

@@ -21,11 +21,13 @@ public interface CardService {
 
   public CardResponseDTO deleteById(Long id);
 
-  public List<CardResponseDTO> getAllCards();
+  public List<CardResponseDTO> getAllCards(Integer page, Integer itemsPerPage);
 
   public CardResponseDTO delCardLast();
 
   public CardResponseDTO addRandomCard(UserResponseDTO u);
 
   public List<CardResponseDTO> getByUserId(Long id);
+
+  public CardResponseDTO changeActive(Long id);
 }

@@ -62,18 +62,18 @@
 		</exclusions>
 		</dependency>
 		
-<!-- https://mvnrepository.com/artifact/com.vaadin/vaadin-server -->
-<dependency>
-    <groupId>com.vaadin</groupId>
-    <artifactId>vaadin-server</artifactId>
-    <version>8.28.4</version>
+	<!-- https://mvnrepository.com/artifact/com.vaadin/vaadin-server -->
+	<dependency>
+    	<groupId>com.vaadin</groupId>
+    	<artifactId>vaadin-server</artifactId>
+    	<version>8.28.4</version>
             <exclusions>
             <exclusion>
                 <groupId>com.vaadin.external.google</groupId>
                 <artifactId>android-json</artifactId>
             </exclusion>
         </exclusions>
-</dependency>
+	</dependency>
 		
 		
 		<dependency>
@@ -138,17 +138,17 @@
 		</dependency>
 		
 		<!-- junit.platform.version = 5.7.1 -->
-<!-- junit.platform.version = 1.7.1 -->
-<dependency>
-    <groupId>org.junit.jupiter</groupId>
-    <artifactId>junit-jupiter-engine</artifactId>
-    <scope>test</scope>
-</dependency>
-<dependency>
-    <groupId>org.junit.platform</groupId>
-    <artifactId>junit-platform-runner</artifactId>
-    <scope>test</scope>
-</dependency>
+	<!-- junit.platform.version = 1.7.1 -->
+	<dependency>
+    	<groupId>org.junit.jupiter</groupId>
+	    <artifactId>junit-jupiter-engine</artifactId>
+	    <scope>test</scope>
+	</dependency>
+		<dependency>
+	    <groupId>org.junit.platform</groupId>
+	    <artifactId>junit-platform-runner</artifactId>
+	    <scope>test</scope>
+	</dependency>
 	
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -156,10 +156,53 @@
         </dependency>	
 		
 		<!-- https://mvnrepository.com/artifact/io.lettuce/lettuce-core -->
-<dependency>
-    <groupId>io.lettuce</groupId>
-    <artifactId>lettuce-core</artifactId>
-</dependency>
+	<dependency>
+    	<groupId>io.lettuce</groupId>
+    	<artifactId>lettuce-core</artifactId>
+	</dependency>
+	
+	<dependency>
+        <groupId>io.jsonwebtoken</groupId>
+        <artifactId>jjwt-api</artifactId>
+        <version>0.11.5</version>
+    </dependency>
+    <dependency>
+        <groupId>io.jsonwebtoken</groupId>
+        <artifactId>jjwt-impl</artifactId>
+        <version>0.11.5</version>
+        <scope>runtime</scope>
+    </dependency>
+    <dependency>
+        <groupId>io.jsonwebtoken</groupId>
+        <artifactId>jjwt-jackson</artifactId>
+        <version>0.11.5</version>
+        <scope>runtime</scope>
+    </dependency>
+	
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-security</artifactId>
+		</dependency>
+		
+		<dependency>
+			<groupId>org.springframework.security</groupId>
+			<artifactId>spring-security-test</artifactId>
+			<scope>test</scope>
+		</dependency>
+
+	<!-- https://mvnrepository.com/artifact/com.auth0/java-jwt -->
+	<dependency>
+	    <groupId>com.auth0</groupId>
+	    <artifactId>java-jwt</artifactId>
+	    <version>4.5.0</version>
+	</dependency>
+	
+	<!-- https://mvnrepository.com/artifact/io.github.cdimascio/dotenv-java -->
+	<dependency>
+    	<groupId>io.github.cdimascio</groupId>
+    	<artifactId>dotenv-java</artifactId>
+    	<version>3.2.0</version>
+	</dependency>
 		
 	</dependencies>
 

@@ -16,7 +16,7 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name = "card_info", schema = "den_schema")
+@Table(name = "payment_cards", schema = "den_schema")
 public class Card {
 
   @Id
