@@ -20,6 +20,8 @@ import com.study.userservice.dto.UserResponseDTO;
 import com.study.userservice.service.interfaces.CardService;
 import com.study.userservice.service.interfaces.UserService;
 
+import jakarta.validation.Valid;
+
 @RestController
 @RequestMapping(path = "/api/v1")
 public class CardController {
@@ -34,7 +36,8 @@ public class CardController {
 
   @PostMapping(path = "/card")
   @PreAuthorize("hasRole('ADMIN')")
-  public ResponseEntity<CardResponseDTO> createCard(@RequestBody CardRequestDTO cardRequestDTO) {
+  public ResponseEntity<CardResponseDTO> createCard(
+      @RequestBody @Valid CardRequestDTO cardRequestDTO) {
     CardResponseDTO cardResponseDTO = cardService.saveOne(cardRequestDTO);
     return ResponseEntity.ok(cardResponseDTO);
   }
@@ -42,7 +45,7 @@ public class CardController {
   @PostMapping(path = "/cards")
   @PreAuthorize("hasRole('ADMIN')")
   public ResponseEntity<List<CardResponseDTO>> createCards(
-      @RequestBody List<CardRequestDTO> cardRequestDTOs) {
+      @RequestBody @Valid List<CardRequestDTO> cardRequestDTOs) {
     List<CardResponseDTO> cardResponseDTO = cardService.saveMany(cardRequestDTOs);
     return ResponseEntity.ok(cardResponseDTO);
   }
@@ -62,7 +65,7 @@ public class CardController {
   @PutMapping("/card/{id}")
   @PreAuthorize("hasRole('ADMIN')")
   public ResponseEntity<CardResponseDTO> updateCard(
-      @PathVariable Long id, @RequestBody CardRequestDTO cardRequestDTO) {
+      @PathVariable Long id, @RequestBody @Valid CardRequestDTO cardRequestDTO) {
     CardResponseDTO cardResponseDTO = cardService.updateCard(id, cardRequestDTO);
     return ResponseEntity.ok(cardResponseDTO);
   }

@@ -4,9 +4,12 @@ import java.io.Serializable;
 import java.time.LocalDateTime;
 
 import org.springframework.data.redis.core.RedisHash;
+// import org.springframework.validation.annotation.Validated;
 
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotEmpty;
+// import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -14,6 +17,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @RedisHash("users")
+// @Validated
 @Builder
 @Data
 @AllArgsConstructor
@@ -24,6 +28,7 @@ public class UserRequestDTO implements Serializable {
 
   private Long id;
 
+  @Valid
   @NotEmpty(message = "Name can not be a null or empty")
   @Size(min = 3, max = 30, message = "The length of the customer name should be between 3 and 30")
   private String name;

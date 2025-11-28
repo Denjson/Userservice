@@ -21,6 +21,8 @@ import com.study.userservice.dto.UserResponseDTO;
 import com.study.userservice.entity.UserHistory;
 import com.study.userservice.service.interfaces.UserService;
 
+import jakarta.validation.Valid;
+
 @RestController
 @RequestMapping(path = "/api/v1")
 public class UserController {
@@ -34,7 +36,8 @@ public class UserController {
 
   @PostMapping(path = "/user")
   @PreAuthorize("hasRole('ADMIN')")
-  public ResponseEntity<UserResponseDTO> createUser(@RequestBody UserRequestDTO userRequestDTO) {
+  public ResponseEntity<UserResponseDTO> createUser(
+      @RequestBody @Valid UserRequestDTO userRequestDTO) {
 
     UserResponseDTO userResponseDTO = userService.saveOne(userRequestDTO);
     return ResponseEntity.ok(userResponseDTO);
@@ -43,7 +46,7 @@ public class UserController {
   @PostMapping(path = "/users")
   @PreAuthorize("hasRole('ADMIN')")
   public ResponseEntity<List<UserResponseDTO>> createUsers(
-      @RequestBody List<UserRequestDTO> UserRequestDTOs) {
+      @RequestBody @Valid List<UserRequestDTO> UserRequestDTOs) {
     List<UserResponseDTO> userResponseDTOs = userService.saveMany(UserRequestDTOs);
     return ResponseEntity.ok(userResponseDTOs);
   }
@@ -69,7 +72,7 @@ public class UserController {
   @PutMapping("/user/{id}")
   @PreAuthorize("hasRole('ADMIN')")
   public ResponseEntity<UserResponseDTO> updateUser(
-      @PathVariable Long id, @RequestBody UserRequestDTO userRequestDTO) {
+      @PathVariable Long id, @RequestBody @Valid UserRequestDTO userRequestDTO) {
     UserResponseDTO userResponseDTO = userService.updateUser(id, userRequestDTO);
     return ResponseEntity.ok(userResponseDTO);
   }
