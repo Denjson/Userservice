@@ -19,54 +19,53 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.study.userservice.auth.Role;
 import com.study.userservice.config.UserSpecification;
 import com.study.userservice.dto.UserRequestDTO;
 import com.study.userservice.dto.UserResponseDTO;
+import com.study.userservice.dto.UserResponseFullDTO;
 import com.study.userservice.entity.User;
-import com.study.userservice.entity.UserHistory;
 import com.study.userservice.exceptions.DuplicatedValueException;
 import com.study.userservice.exceptions.IdNotFoundException;
 import com.study.userservice.mappers.UserMapper;
-import com.study.userservice.repository.UserHistoryRepository;
 import com.study.userservice.repository.UserRepository;
 import com.study.userservice.service.interfaces.UserService;
 
 @Service
+// @Transactional(readOnly = true)	// appling on all methods without exact annotation
 public class UserServiceImpl implements UserService {
 
   private static final Logger log = LoggerFactory.getLogger(UserServiceImpl.class);
   private final UserRepository userRepository;
-  private final UserMapper userMapper;
-  private final UserHistoryRepository userHistoryRepository;
 
-  public UserServiceImpl(
-      UserRepository userRepository,
-      UserMapper userMapper,
-      UserHistoryRepository userHistoryRepository) {
+  private final UserMapper userMapper;
+
+  public UserServiceImpl(UserRepository userRepository, UserMapper userMapper) {
     this.userRepository = userRepository;
     this.userMapper = userMapper;
-    this.userHistoryRepository = userHistoryRepository;
   }
 
+  @Transactional
   @CacheEvict(value = "all", allEntries = true)
   public UserResponseDTO saveOne(UserRequestDTO userRequestDTO) {
     if (userRepository.getByEmail(userRequestDTO.getEmail()).isPresent()) {
       throw new DuplicatedValueException(
           "User with e-mail is already existing: " + userRequestDTO.getEmail());
     }
-    User user = userRepository.save(userMapper.toEntity(userRequestDTO));
-    log.info("___Saved User: {}", userRequestDTO);
+    User u = userMapper.toEntity(userRequestDTO);
+    u.setRole(Role.USER);
+    User user = userRepository.save(u);
+    log.info("___Saved User: {}", user);
     return userMapper.toDTO(user);
   }
 
+  @Transactional
   @CacheEvict(value = "all", allEntries = true)
   public List<UserResponseDTO> saveMany(List<UserRequestDTO> userRequestDTOs) {
     List<String> emails =
         userRequestDTOs.stream().map(UserRequestDTO::getEmail).collect(Collectors.toList());
-    //    Set<String> set = new HashSet<>(emails);
-    //    userRepository.findByEmailIn(set);
     for (String email : emails) {
       if (userRepository.getByEmail(email).isPresent()) {
         throw new DuplicatedValueException("User with e-mail is already existing: " + email);
@@ -77,6 +76,7 @@ public class UserServiceImpl implements UserService {
     return userMapper.toDTOs(manyUsers);
   }
 
+  @Transactional(readOnly = true)
   @Cacheable(value = "users", key = "#id")
   public UserResponseDTO getById(Long id) {
     User user =
@@ -86,6 +86,7 @@ public class UserServiceImpl implements UserService {
     return userMapper.toDTO(user);
   }
 
+  @Transactional
   @Caching(
       evict = {
         @CacheEvict(value = "users", key = "#id"),
@@ -101,6 +102,7 @@ public class UserServiceImpl implements UserService {
     return userMapper.toDTO(user);
   }
 
+  @Transactional(readOnly = true)
   public List<UserResponseDTO> getByIds(Set<Long> ids) {
     List<User> users = userRepository.findByIdIn(ids).get();
     if (users.isEmpty()) {
@@ -110,6 +112,7 @@ public class UserServiceImpl implements UserService {
     return userMapper.toDTOs(users);
   }
 
+  @Transactional(readOnly = true)
   public UserResponseDTO getByEmail(String email) {
     User user =
         userRepository
@@ -118,6 +121,7 @@ public class UserServiceImpl implements UserService {
     return userMapper.toDTO(user);
   }
 
+  @Transactional
   @CachePut(value = "users", key = "#id")
   @CacheEvict(value = "all", allEntries = true)
   public UserResponseDTO updateUser(Long id, UserRequestDTO userRequestDTO) {
@@ -133,11 +137,12 @@ public class UserServiceImpl implements UserService {
     }
     userRequestDTO.setId(id);
     user = userMapper.toEntity(userRequestDTO);
-    userRepository.save(user);
+    userRepository.update(user);
     log.info("___User updated: {}", user.toString());
     return userMapper.toDTO(user);
   }
 
+  @Transactional(readOnly = true)
   @Cacheable(value = "all", key = "#page + '-' + #itemsPerPage")
   public List<UserResponseDTO> getAllUsers(Integer page, Integer itemsPerPage) {
     Pageable pageable = PageRequest.of(page, itemsPerPage, Sort.by("Id"));
@@ -150,6 +155,7 @@ public class UserServiceImpl implements UserService {
     return userResponseDTOs;
   }
 
+  @Transactional(readOnly = true)
   public UserResponseDTO getUserLast() {
     User user =
         userRepository
@@ -160,6 +166,7 @@ public class UserServiceImpl implements UserService {
     return userResponseDTO;
   }
 
+  @Transactional
   @CacheEvict(value = "all", allEntries = true)
   public UserResponseDTO delUserLast() {
     log.info("___userRepository.count(): {}", userRepository.count());
@@ -174,6 +181,7 @@ public class UserServiceImpl implements UserService {
     }
   }
 
+  @Transactional
   @CacheEvict(value = "all", allEntries = true)
   public List<UserResponseDTO> addTestUser() {
     log.info("___Quantity of users: {}", userRepository.count());
@@ -189,6 +197,7 @@ public class UserServiceImpl implements UserService {
     return userMapper.toDTOs(users);
   }
 
+  @Transactional(readOnly = true)
   public UserResponseDTO getRandomUser() {
     List<User> entityList = new ArrayList<>();
     userRepository.findAll().forEach(entityList::add);
@@ -201,6 +210,7 @@ public class UserServiceImpl implements UserService {
     return userMapper.toDTO(user);
   }
 
+  @Transactional(readOnly = true)
   public List<UserResponseDTO> getRangeIds(Integer n) {
     List<User> users = userRepository.findIdsNative(n);
     log.info("___All users within range: {}", users.toString());
@@ -208,6 +218,7 @@ public class UserServiceImpl implements UserService {
     return userResponseDTOs;
   }
 
+  @Transactional(readOnly = true)
   public List<UserResponseDTO> findByJPQL(String lastname) {
     List<User> users = userRepository.findByLastNameJPQL(lastname);
     if (users.isEmpty()) {
@@ -218,14 +229,15 @@ public class UserServiceImpl implements UserService {
     return userResponseDTOs;
   }
 
-  public List<UserHistory> getUserLog() {
-    List<UserHistory> list = userHistoryRepository.findAll();
+  @Transactional(readOnly = true)
+  public List<UserResponseFullDTO> getUserLog() {
+    List<User> list = userRepository.findAll();
     log.info("___All users within range: {}", list.toString());
-    return list;
+    return userMapper.toFullDTOs(list);
   }
 
+  @Transactional
   public void addThreeTestUsers() {
-
     UserRequestDTO admin =
         UserRequestDTO.builder()
             .name("Admin")
@@ -266,6 +278,7 @@ public class UserServiceImpl implements UserService {
     }
   }
 
+  @Transactional
   @CacheEvict(value = "all", allEntries = true)
   public UserResponseDTO changeActive(Long id) {
     User user =
@@ -278,6 +291,7 @@ public class UserServiceImpl implements UserService {
     return userMapper.toDTO(user);
   }
 
+  @Transactional(readOnly = true)
   public List<UserResponseDTO> getNamesContainsText(String keyword) {
     Specification<User> spec = UserSpecification.nameContains(keyword);
     List<User> users = userRepository.findAll(spec);

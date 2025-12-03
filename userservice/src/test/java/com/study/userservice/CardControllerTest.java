@@ -1,6 +1,5 @@
 package com.study.userservice;
 
-// import static org.junit.Assert.assertNotNull;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.assertTrue;
@@ -108,7 +107,7 @@ class CardControllerTest extends AbstractIntegrationTest {
   void createCardTest() {
     String payload =
 """
-{"userId":currentUserId,"number":"123456789","holder":"CardHolder","expirationDate":"2022-02-16T10:22:15","active":"true"}
+{"userId":currentUserId,"number":"1234123412341234","holder":"CardHolder","expirationDate":"2032-02-16T10:22:15","active":"true"}
         """;
 
     payload = payload.replace("currentUserId", "" + userId);
@@ -133,8 +132,8 @@ class CardControllerTest extends AbstractIntegrationTest {
   void createCardsTest() {
     String payload =
         """
-  [{"userId":currentUserId,"number":"111111","holder":"CardHolder","expirationDate":"2022-02-16T10:22:15","active":"true"},
-  {"userId":currentUserId,"number":"222222","holder":"CardHolder","expirationDate":"2022-02-16T10:22:15","active":"true"}]
+  [{"userId":currentUserId,"number":"1234123412341234","holder":"CardHolder","expirationDate":"2032-02-16T10:22:15","active":"true"},
+  {"userId":currentUserId,"number":"1234123412341235","holder":"CardHolder","expirationDate":"2032-02-16T10:22:15","active":"true"}]
           """;
     payload = payload.replace("currentUserId", "" + userId);
 
@@ -202,7 +201,7 @@ class CardControllerTest extends AbstractIntegrationTest {
 
     String payload =
         """
-  {"userId":currentUserId,"number":"987654","holder":"CannotChangeCardHolder","expirationDate":"2022-02-16T10:22:15","active":"true"}
+  {"userId":currentUserId,"number":"1234123412341234","holder":"CannotChangeCardHolder","expirationDate":"2032-02-16T10:22:15","active":"true"}
           """;
     payload = payload.replace("currentUserId", "" + userId);
 
@@ -215,7 +214,7 @@ class CardControllerTest extends AbstractIntegrationTest {
             .put("/api/v1/card/" + id)
             .then()
             .statusCode(200)
-            .body("active", equalTo(!userResponseDTO.isActive()))
+            .body("active", equalTo(userResponseDTO.isActive()))
             .extract()
             .response();
     assertNotNull(responseController.asString());

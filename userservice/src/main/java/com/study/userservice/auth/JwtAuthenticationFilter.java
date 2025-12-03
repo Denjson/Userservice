@@ -16,9 +16,12 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import com.study.userservice.entity.User;
+import com.study.userservice.exceptions.TokenExpiredException;
 import com.study.userservice.repository.UserRepository;
 import com.study.userservice.service.UserServiceImpl;
 
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.Jwts;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -58,11 +61,16 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
       return;
     }
     jwt = authHeader.substring(7);
+    try {
+      Jwts.parserBuilder().setSigningKey(jwtService.getSignInKey()).build().parse(jwt);
+    } catch (ExpiredJwtException e) {
+      throw new TokenExpiredException("Token Expired. " + e.getMessage());
+    }
+
     userEmail = jwtService.extractUsername(jwt);
     String role = jwtService.extractRole(jwt);
     Role r = Role.valueOf(role);
     log.info("___Role from token: {}", r);
-
     Optional<User> userO = userRepository.getByEmail(userEmail);
     if (userO.isEmpty()) {
       User user =
@@ -80,7 +88,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
       u.setRole(r);
       userRepository.save(u);
     }
-
     if (userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
       UserDetails userDetails = this.userDetailsService.loadUserByUsername(userEmail);
       if (jwtService.isTokenValid(jwt, userDetails)) {

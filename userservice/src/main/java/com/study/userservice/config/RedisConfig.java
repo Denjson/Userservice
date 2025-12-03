@@ -1,20 +1,25 @@
 package com.study.userservice.config;
 
-// @Configuration
-// @EnableRedisRepositories(basePackages = "com.study.userservice.repository")
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.cache.CacheManager;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.event.EventListener;
+
+@Configuration
 public class RedisConfig {
 
-  //  @Bean
-  //  public RedisConnectionFactory redisConnectionFactory() {
-  // Configure your Redis connection factory (e.g., using Lettuce or Jedis)
-  // This example uses LettuceConnectionFactory for simplicity
-  //    return new LettuceConnectionFactory();
-  //  }
-  //
-  //  @Bean
-  //  public RedisTemplate<?, ?> redisTemplate() {
-  //    RedisTemplate<byte[], byte[]> template = new RedisTemplate<>();
-  //    template.setConnectionFactory(redisConnectionFactory());
-  //    return template;
-  //  }
+  @Autowired private CacheManager cacheManager;
+
+  /** Clear Redis cash on start up of the application */
+  @EventListener
+  public void onApplicationReady(ApplicationReadyEvent event) {
+    // not working - do not collecting names:
+    // cacheManager.getCacheNames().parallelStream().forEach(n ->
+    //      cacheManager.getCache(n).clear());
+    cacheManager.getCache("users").clear();
+    cacheManager.getCache("cards").clear();
+    cacheManager.getCache("all").clear();
+    cacheManager.getCache("allcards").clear();
+  }
 }

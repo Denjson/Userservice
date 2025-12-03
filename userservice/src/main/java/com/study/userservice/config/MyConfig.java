@@ -1,35 +1,14 @@
 package com.study.userservice.config;
 
 // import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
+// import org.springframework.context.annotation.Configuration;
+
 // import org.springframework.security.authentication.AnonymousAuthenticationToken;
 // import org.springframework.security.core.Authentication;
 // import org.springframework.security.core.context.SecurityContextHolder;
 
-// import com.study.userservice.entity.User;
-// import com.study.userservice.mappers.UserMapper;
-// import com.study.userservice.repository.UserHistoryRepository;
-import com.study.userservice.repository.UserRepository;
-
-// import com.study.userservice.service.UserServiceImpl;
-
-@Configuration
+// @Configuration
 public class MyConfig {
-
-  UserRepository userRepository;
-
-  /**
-   * Provides UserServiceImpl to use native queries with JpaRepository
-   *
-   * @return UserServiceImpl
-   */
-  //  @Bean
-  //  public UserServiceImpl userService(
-  //      UserRepository userRepository,
-  //      UserMapper userMapper,
-  //      UserHistoryRepository userHistoryRepository) {
-  //    return new UserServiceImpl(userRepository, userMapper, userHistoryRepository);
-  //  }
 
   //  @Bean
   //  public User getCurrentAuthenticatedUser() {

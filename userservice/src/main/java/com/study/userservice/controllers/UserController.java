@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.study.userservice.dto.UserRequestDTO;
 import com.study.userservice.dto.UserResponseDTO;
-import com.study.userservice.entity.UserHistory;
+import com.study.userservice.dto.UserResponseFullDTO;
 import com.study.userservice.service.interfaces.UserService;
 
 import jakarta.validation.Valid;
@@ -38,7 +38,6 @@ public class UserController {
   @PreAuthorize("hasRole('ADMIN')")
   public ResponseEntity<UserResponseDTO> createUser(
       @RequestBody @Valid UserRequestDTO userRequestDTO) {
-
     UserResponseDTO userResponseDTO = userService.saveOne(userRequestDTO);
     return ResponseEntity.ok(userResponseDTO);
   }
@@ -129,7 +128,8 @@ public class UserController {
   }
 
   @GetMapping(path = "/user/log")
-  public ResponseEntity<List<UserHistory>> getUsersLog() {
+  @PreAuthorize("hasRole('ADMIN')")
+  public ResponseEntity<List<UserResponseFullDTO>> getUsersLog() {
     return ResponseEntity.ok(userService.getUserLog());
   }
 

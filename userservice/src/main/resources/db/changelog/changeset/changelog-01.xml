@@ -31,7 +31,9 @@
   	    	<constraints  nullable="false"/>  
   	    </column>  
   	    <column  name="active"  type="BOOLEAN"/>
-  	    <column  name="role"  type="varchar(20)"/>  
+  	    <column  name="role"  type="varchar(20)"/>
+  	    <column  name="created_at"  type="date"/>
+  	    <column  name="updated_at"  type="date"/>  
         </createTable> 
     </changeSet>  
     

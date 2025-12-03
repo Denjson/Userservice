@@ -1,51 +1,32 @@
 package com.study.userservice.mappers;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
-import org.springframework.stereotype.Component;
+import org.mapstruct.InheritInverseConfiguration;
+import org.mapstruct.Mapper;
+// import org.mapstruct.Mapping;
+import org.mapstruct.ReportingPolicy;
 
-import com.study.userservice.auth.Role;
 import com.study.userservice.dto.UserRequestDTO;
 import com.study.userservice.dto.UserResponseDTO;
+import com.study.userservice.dto.UserResponseFullDTO;
 import com.study.userservice.entity.User;
 
-@Component
-public class UserMapper {
+@Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
+public interface UserMapper {
 
-  public UserResponseDTO toDTO(User user) {
-    if (user == null) {
-      return null;
-    }
-    return new UserResponseDTO(
-        user.getId(),
-        user.getName(),
-        user.getSurname(),
-        user.getBirthDate(),
-        user.getEmail(),
-        user.isActive());
-  }
+  //  UserMapper INSTANCE = Mappers.getMapper(UserMapper.class);
 
-  public List<UserResponseDTO> toDTOs(List<User> users) {
-    return users.stream().map(this::toDTO).collect(Collectors.toList());
-  }
+  //  @Mapping(target = "role", ignore = true) // field "role" will be shown with null
+  public UserResponseDTO toDTO(User user);
 
-  public User toEntity(UserRequestDTO userRequestDto) {
-    if (userRequestDto == null) {
-      return null;
-    }
-    User user = new User();
-    user.setId(userRequestDto.getId());
-    user.setName(userRequestDto.getName());
-    user.setSurname(userRequestDto.getSurname());
-    user.setBirthDate(userRequestDto.getBirthDate());
-    user.setEmail(userRequestDto.getEmail());
-    user.setActive(userRequestDto.isActive());
-    user.setRole(Role.USER);
-    return user;
-  }
+  public List<UserResponseDTO> toDTOs(List<User> users);
 
-  public List<User> manyToEntity(List<UserRequestDTO> userDTOs) {
-    return userDTOs.stream().map(this::toEntity).collect(Collectors.toList());
-  }
+  @InheritInverseConfiguration
+  public User toEntity(UserRequestDTO userRequestDto);
+
+  @InheritInverseConfiguration
+  public List<User> manyToEntity(List<UserRequestDTO> userDTOs);
+
+  public List<UserResponseFullDTO> toFullDTOs(List<User> users);
 }

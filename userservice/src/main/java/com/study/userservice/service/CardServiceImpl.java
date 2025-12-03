@@ -17,6 +17,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.study.userservice.dto.CardRequestDTO;
 import com.study.userservice.dto.CardResponseDTO;
@@ -32,11 +33,14 @@ import com.study.userservice.repository.UserRepository;
 import com.study.userservice.service.interfaces.CardService;
 
 @Service
+// @Transactional(readOnly = true)	// appling on all methods without exact annotation
 public class CardServiceImpl implements CardService {
 
   private static final Logger log = LoggerFactory.getLogger(CardServiceImpl.class);
+  private static int cardsQ = 5;
   private final CardRepository cardRepository;
   private final UserRepository userRepository;
+
   private final CardMapper cardMapper;
 
   public CardServiceImpl(
@@ -46,6 +50,7 @@ public class CardServiceImpl implements CardService {
     this.cardMapper = cardMapper;
   }
 
+  @Transactional
   @CacheEvict(value = "allcards", allEntries = true)
   public CardResponseDTO saveOne(CardRequestDTO cardRequestDTO) {
     checkCard(cardRequestDTO);
@@ -64,11 +69,13 @@ public class CardServiceImpl implements CardService {
           "Card number is duplicated: " + cardRequestDTO.getNumber());
     }
     Optional<List<Card>> cards = cardRepository.findByUserId(cardRequestDTO.getUserId());
-    if (cards.get().size() > 4) {
-      throw new CardQuantityLimitException("Users are not allowed to have more than 5 cards");
+    if (cards.get().size() >= cardsQ) {
+      throw new CardQuantityLimitException(
+          "Users are not allowed to have more than " + cardsQ + " cards");
     }
   }
 
+  @Transactional
   @CacheEvict(value = "allcards", allEntries = true)
   public List<CardResponseDTO> saveMany(List<CardRequestDTO> cardRequestDTOs) {
     for (CardRequestDTO cardRequestDTO : cardRequestDTOs) {
@@ -89,6 +96,7 @@ public class CardServiceImpl implements CardService {
     }
   }
 
+  @Transactional(readOnly = true)
   @Cacheable(value = "cards", key = "#id")
   public CardResponseDTO getById(Long id) {
     Card card =
@@ -98,6 +106,7 @@ public class CardServiceImpl implements CardService {
     return cardMapper.toDTO(card);
   }
 
+  @Transactional(readOnly = true)
   public List<CardResponseDTO> getByIds(Set<Long> ids) {
     List<Card> cards = cardRepository.findByIdIn(ids).get();
     if (cards.isEmpty()) {
@@ -107,6 +116,7 @@ public class CardServiceImpl implements CardService {
     return cardMapper.toDTOs(cards);
   }
 
+  @Transactional(readOnly = true)
   @Cacheable(value = "allcards", key = "#page + '-' + #itemsPerPage")
   public List<CardResponseDTO> getAllCards(Integer page, Integer itemsPerPage) {
     Pageable pageable = PageRequest.of(page, itemsPerPage, Sort.by("Id"));
@@ -119,6 +129,7 @@ public class CardServiceImpl implements CardService {
   }
 
   //  @Cacheable(value = "cards", key = "#id")
+  @Transactional(readOnly = true)
   public List<CardResponseDTO> getByUserId(Long id) {
     List<Card> cards = cardRepository.findByUserId(id).get();
     if (cards.size() == 0) {
@@ -127,6 +138,7 @@ public class CardServiceImpl implements CardService {
     return cardMapper.toDTOs(cards);
   }
 
+  @Transactional
   @Caching(
       evict = {
         @CacheEvict(value = "cards", key = "#id"),
@@ -141,6 +153,7 @@ public class CardServiceImpl implements CardService {
     return cardMapper.toDTO(card);
   }
 
+  @Transactional
   @CacheEvict(value = "allcards", allEntries = true)
   public CardResponseDTO delCardLast() {
     Card card =
@@ -153,6 +166,7 @@ public class CardServiceImpl implements CardService {
     return сardResponseDTO;
   }
 
+  @Transactional
   @CachePut(value = "cards", key = "#id")
   @CacheEvict(value = "allcards", allEntries = true)
   public CardResponseDTO updateCard(Long id, CardRequestDTO cardDetails) {
@@ -167,11 +181,12 @@ public class CardServiceImpl implements CardService {
       card.setNumber(cardDetails.getNumber());
       card.setExpirationDate(cardDetails.getExpirationDate());
       if (cardDetails.getExpirationDate().compareTo(LocalDateTime.now()) > 0) {
-        card.setActive(cardDetails.isActive());
+        card.setActive(cardDetails.getActive());
       } else {
-        card.setActive(!cardDetails.isActive());
+        card.setActive(cardDetails.getActive());
       }
-      cardRepository.save(card);
+      cardRepository.update(card);
+
       log.info("___Card updated: {}", card);
     } else {
       log.info("___User with ID: {} not found.", cardDetails.getUserId());
@@ -180,6 +195,7 @@ public class CardServiceImpl implements CardService {
     return cardMapper.toDTO(card);
   }
 
+  @Transactional
   @CacheEvict(value = "allcards", allEntries = true)
   public CardResponseDTO addRandomCard(UserResponseDTO userResponseDto) {
     Card card = new Card();
@@ -193,6 +209,7 @@ public class CardServiceImpl implements CardService {
     return cardMapper.toDTO(card);
   }
 
+  @Transactional
   @CacheEvict(value = "allcards", allEntries = true)
   public CardResponseDTO changeActive(Long id) {
     Card card =

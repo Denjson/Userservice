@@ -15,6 +15,7 @@ import java.util.Set;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mapstruct.factory.Mappers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
@@ -51,8 +52,9 @@ public class CardServiceTest {
 
   @InjectMocks private CardServiceImpl cardServiceImpl;
 
-  @Spy private UserMapper userMapper;
-  @Spy private CardMapper cardMapper;
+  @Spy private UserMapper userMapper = Mappers.getMapper(UserMapper.class);
+
+  @Spy private CardMapper cardMapper = Mappers.getMapper(CardMapper.class);
 
   //  private static final Logger log = LoggerFactory.getLogger(CardServiceTest.class);
 

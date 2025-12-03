@@ -3,19 +3,18 @@ package com.study.userservice.dto;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 
-import org.springframework.data.redis.core.RedisHash;
+import com.study.userservice.auth.Role;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-@RedisHash("users")
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class UserResponseDTO implements Serializable {
+public class UserResponseFullDTO implements Serializable {
 
-  private static final long serialVersionUID = 4648357076042140597L;
+  private static final long serialVersionUID = 5454001051129590743L;
 
   private Long id;
 
@@ -29,5 +28,9 @@ public class UserResponseDTO implements Serializable {
 
   private boolean active;
 
-  //  private Role role;
+  private Role role;
+
+  private LocalDateTime createdAt;
+
+  private LocalDateTime updatedAt;
 }

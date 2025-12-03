@@ -65,4 +65,47 @@ public class GlobalExceptionHandler {
     errorDetails.put("message", ex.getMessage());
     return new ResponseEntity<>(errorDetails, HttpStatus.CONFLICT);
   }
+
+  @ExceptionHandler(DateValidationException.class)
+  public ResponseEntity<Map<String, Object>> handleDateValidationException(
+      DateValidationException ex) {
+    Map<String, Object> errorDetails = new HashMap<>();
+    errorDetails.put("timestamp", LocalDateTime.now());
+    errorDetails.put("status", HttpStatus.REQUESTED_RANGE_NOT_SATISFIABLE.value());
+    errorDetails.put("error", "Age limitation");
+    errorDetails.put("message", ex.getMessage());
+    return new ResponseEntity<>(errorDetails, HttpStatus.REQUESTED_RANGE_NOT_SATISFIABLE);
+  }
+
+  @ExceptionHandler(NotValidValueException.class)
+  public ResponseEntity<Map<String, Object>> handleNotValidValueException(
+      NotValidValueException ex) {
+    Map<String, Object> errorDetails = new HashMap<>();
+    errorDetails.put("timestamp", LocalDateTime.now());
+    errorDetails.put("status", HttpStatus.EXPECTATION_FAILED.value());
+    errorDetails.put("error", "Null is not allowed");
+    errorDetails.put("message", ex.getMessage());
+    return new ResponseEntity<>(errorDetails, HttpStatus.EXPECTATION_FAILED);
+  }
+
+  @ExceptionHandler(TokenExpiredException.class)
+  public ResponseEntity<Map<String, Object>> handleTokenExpiredException(TokenExpiredException ex) {
+    Map<String, Object> errorDetails = new HashMap<>();
+    errorDetails.put("timestamp", LocalDateTime.now());
+    errorDetails.put("status", HttpStatus.NOT_ACCEPTABLE.value());
+    errorDetails.put("error", "Token is already expired");
+    errorDetails.put("message", ex.getMessage());
+    return new ResponseEntity<>(errorDetails, HttpStatus.NOT_ACCEPTABLE);
+  }
+
+  @ExceptionHandler(CardQuantityLimitException.class)
+  public ResponseEntity<Map<String, Object>> handleCardQuantityLimitException(
+      CardQuantityLimitException ex) {
+    Map<String, Object> errorDetails = new HashMap<>();
+    errorDetails.put("timestamp", LocalDateTime.now());
+    errorDetails.put("status", HttpStatus.CONFLICT.value());
+    errorDetails.put("error", "Quantity limit achieved");
+    errorDetails.put("message", ex.getMessage());
+    return new ResponseEntity<>(errorDetails, HttpStatus.CONFLICT);
+  }
 }

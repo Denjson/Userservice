@@ -1,5 +1,8 @@
 package com.study.userservice.controllers;
 
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Map;
 
 import org.slf4j.Logger;
@@ -13,24 +16,12 @@ import org.springframework.web.bind.annotation.RestController;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.interfaces.Claim;
 import com.auth0.jwt.interfaces.DecodedJWT;
-import com.study.userservice.auth.JwtService;
-import com.study.userservice.repository.UserRepository;
-import com.study.userservice.service.interfaces.UserService;
 
 @RestController
 @RequestMapping(path = "/api/v1")
 public class AuthController {
 
   private static final Logger log = LoggerFactory.getLogger(AuthController.class);
-  JwtService jwtService;
-  UserService userService;
-  UserRepository userRepository;
-
-  public AuthController(JwtService jwtService, UserService userService) {
-    super();
-    this.jwtService = jwtService;
-    this.userService = userService;
-  }
 
   @GetMapping("/auth")
   public ResponseEntity<String> accessSecureResource(
@@ -46,9 +37,18 @@ public class AuthController {
     log.info("___Claims: {}", claims);
     log.info("___Id: {}", claims.get("UserId"));
 
+    long epochMilli = 1000 * claims.get("exp").asLong(); // December 1, 2023, 00:00:00 UTC
+    Instant instant = Instant.ofEpochMilli(epochMilli);
+    ZoneId zoneId = ZoneId.systemDefault();
+    LocalDateTime localDateTimeExp = instant.atZone(zoneId).toLocalDateTime();
+    LocalDateTime localDateTimeNow = LocalDateTime.now();
+    boolean exp = localDateTimeExp.isBefore(localDateTimeNow);
+    String expired = "Token expired: " + exp;
+    log.info(expired);
     if (token != null) {
       //      userService.addThreeTestUsers();
-      return ResponseEntity.ok("Access granted with token:\n" + token + "\n" + "Claims: " + claims);
+      return ResponseEntity.ok(
+          "Access token information:\n" + token + "\n" + "Claims: " + claims + "\n" + expired);
 
     } else {
       return ResponseEntity.status(401).body("Unauthorized: Token missing or invalid.");

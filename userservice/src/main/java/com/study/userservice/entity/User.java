@@ -2,16 +2,16 @@ package com.study.userservice.entity;
 
 import java.time.LocalDateTime;
 import java.util.Collection;
+import java.util.Objects;
 
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
-import com.study.userservice.auditing.UserEntityListener;
+import com.study.userservice.audit.AuditableEntity;
 import com.study.userservice.auth.Role;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EntityListeners;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
@@ -20,17 +20,21 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
 
+// @Data
 @Entity
 @Builder
-@EntityListeners(UserEntityListener.class)
-@Data
+@Getter
+@Setter
+@ToString
 @AllArgsConstructor
 @NoArgsConstructor
 @Table(name = "users", schema = "den_schema")
-public class User implements UserDetails {
+public class User extends AuditableEntity implements UserDetails {
 
   private static final long serialVersionUID = 518584766514502119L;
 
@@ -54,8 +58,7 @@ public class User implements UserDetails {
   @Column(name = "active")
   private boolean active;
 
-  //  @Transient
-  @Column(name = "role")
+  @Column(name = "role", nullable = true)
   @Enumerated(EnumType.STRING)
   private Role role;
 
@@ -65,12 +68,35 @@ public class User implements UserDetails {
   }
 
   @Override
-  public String getPassword() { // TODO Auto-generated method stub
+  public String getPassword() {
     return null;
   }
 
   @Override
-  public String getUsername() { // TODO Auto-generated method stub
+  public String getUsername() {
     return email;
+  }
+
+  @Override
+  public int hashCode() {
+    final int prime = 31;
+    int result = super.hashCode();
+    result = prime * result + Objects.hash(active, birthDate, email, id, name, role, surname);
+    return result;
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj) return true;
+    if (!super.equals(obj)) return false;
+    if (getClass() != obj.getClass()) return false;
+    User other = (User) obj;
+    return active == other.active
+        && Objects.equals(birthDate, other.birthDate)
+        && Objects.equals(email, other.email)
+        && Objects.equals(id, other.id)
+        && Objects.equals(name, other.name)
+        && role == other.role
+        && Objects.equals(surname, other.surname);
   }
 }
