@@ -21,6 +21,8 @@
            <column  name="holder"  type="varchar(15)"/>
            <column  name="expiration_date"  type="date"/>
            <column  name="active"  type="BOOLEAN"/>
+           <column  name="created_at"  type="date"/>
+  	       <column  name="updated_at"  type="date"/> 
         </createTable> 
     </changeSet>  
 

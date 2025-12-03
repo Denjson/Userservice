@@ -1,4 +1,4 @@
-package com.study.userservice.auditing;
+package com.study.userservice.audit;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -7,9 +7,10 @@ import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 
 @Configuration
 @EnableJpaAuditing(auditorAwareRef = "auditorAware")
-class JpaConfig {
+public class AuditingConfig {
+
   @Bean
   public AuditorAware<String> auditorAware() {
-    return new AuditorAwareImpl();
+    return new SpringSecurityAuditorAware();
   }
 }

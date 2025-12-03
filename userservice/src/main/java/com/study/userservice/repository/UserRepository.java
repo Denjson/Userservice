@@ -6,6 +6,7 @@ import java.util.Set;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -30,4 +31,11 @@ public interface UserRepository extends JpaRepository<User, Long>, JpaSpecificat
 
   @Query("SELECT u FROM User u WHERE u.surname = :surname")
   List<User> findByLastNameJPQL(@Param("surname") String surname);
+
+  @Modifying
+  @Query(
+      "update User u set u.name = :#{#user.name}, u.surname = :#{#user.surname}, "
+          + "u.birthDate = :#{#user.birthDate}, u.email = :#{#user.email}, "
+          + "u.active = :#{#user.active}, u.role = :#{#user.role} where u.id = :#{#user.id}")
+  int update(User user);
 }

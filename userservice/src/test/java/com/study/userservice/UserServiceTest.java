@@ -18,6 +18,7 @@ import java.util.Set;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mapstruct.factory.Mappers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -46,11 +47,8 @@ import lombok.extern.slf4j.Slf4j;
 public class UserServiceTest {
 
   @Mock private UserRepository userRepository;
-
+  @Spy private UserMapper userMapper = Mappers.getMapper(UserMapper.class);
   @InjectMocks private UserServiceImpl userServiceImpl;
-
-  @Spy private UserMapper userMapper;
-
   //  private static final Logger log = LoggerFactory.getLogger(UserServiceTest.class);
 
   User existingUser;
@@ -59,7 +57,7 @@ public class UserServiceTest {
 
   @BeforeEach
   void setUp() {
-    stamp = LocalDateTime.of(2025, 11, 25, 10, 30);
+    stamp = LocalDateTime.of(2002, 11, 25, 10, 30);
     existingUser = new User(1L, "John", "Connor", stamp, "john@mail.com", true, Role.USER);
     userRequestDTO = new UserRequestDTO(1L, "John", "Connor", stamp, "john@mail.com", true);
   }
@@ -68,7 +66,6 @@ public class UserServiceTest {
   void saveOneTest() {
     when(userRepository.save(existingUser)).thenReturn(existingUser);
     UserResponseDTO result = userServiceImpl.saveOne(userRequestDTO);
-    log.info("___ Result: {}", result);
     assertNotNull(result);
     assertEquals(existingUser.getId(), result.getId());
     assertEquals("john@mail.com", result.getEmail());
@@ -79,7 +76,7 @@ public class UserServiceTest {
     List<User> users = new ArrayList<>();
     List<UserRequestDTO> dtos = new ArrayList<>();
     for (Long i = 0L; i < 2; i++) {
-      User user = new User(i, "John", "Connor", stamp, i + "@mail.com", true, Role.USER);
+      User user = new User(i, "John", "Connor", stamp, i + "@mail.com", true, null);
       users.add(user);
       UserRequestDTO userRequestDTO =
           new UserRequestDTO(i, "John", "Connor", stamp, i + "@mail.com", true);
@@ -124,9 +121,9 @@ public class UserServiceTest {
 
   @Test
   void getByIdsTest() {
-    Set<Long> ids = Set.of(0L, 1L);
+    Set<Long> ids = Set.of(1L, 2L);
     List<User> users = new ArrayList<>();
-    for (Long i = 0L; i < 2; i++) {
+    for (Long i = 1L; i < 3; i++) {
       User user = new User(i, "John", "Connor", stamp, i + "@mail.com", true, Role.USER);
       users.add(user);
     }
@@ -156,8 +153,8 @@ public class UserServiceTest {
     when(userRepository.getByEmail(userRequestDTO.getEmail()))
         .thenReturn(Optional.of(existingUser));
     when(userRepository.findById(1L)).thenReturn(Optional.of(existingUser));
-    User userUpdated = new User(1L, "JohnNew", "Connor", stamp, "john@mail.com", true, Role.USER);
-    when(userRepository.save(userUpdated)).thenReturn(userUpdated);
+    User userUpdated = new User(1L, "JohnNew", "Connor", stamp, "john@mail.com", true, null);
+    when(userRepository.update(userUpdated)).thenReturn(1);
     UserResponseDTO result = userServiceImpl.updateUser(1L, userRequestDTO);
     log.info("___ Result: {}", result);
     assertEquals("john@mail.com", result.getEmail());

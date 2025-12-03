@@ -46,33 +46,6 @@ public class JwtService {
     return claimsResolver.apply(claims);
   }
 
-  //  public String generateToken(UserDetails userDetails, User savedUser) {
-  //    return generateToken(new HashMap<>(), userDetails, savedUser);
-  //  }
-  //
-  //  public String generateToken(
-  //      Map<String, Object> extraClaims, UserDetails userDetails, User savedUser) {
-  //    return buildToken(extraClaims, userDetails, jwtExpiration, savedUser);
-  //  }
-  //
-  //  public String generateRefreshToken(UserDetails userDetails, User savedUser) {
-  //    return buildToken(new HashMap<>(), userDetails, refreshExpiration, savedUser);
-  //  }
-  //
-  //  private String buildToken(
-  //      Map<String, Object> extraClaims, UserDetails userDetails, long expiration, User savedUser)
-  // {
-  //    extraClaims.put("UserId", savedUser.getId());
-  //    //    extraClaims.put("Role", savedUser.getRole());
-  //    return Jwts.builder()
-  //        .setClaims(extraClaims)
-  //        .setSubject(userDetails.getUsername())
-  //        .setIssuedAt(new Date(System.currentTimeMillis()))
-  //        .setExpiration(new Date(System.currentTimeMillis() + expiration))
-  //        .signWith(getSignInKey(), SignatureAlgorithm.HS256)
-  //        .compact();
-  //  }
-
   public boolean isTokenValid(String token, UserDetails userDetails) {
     final String username = extractUsername(token);
     return (username.equals(userDetails.getUsername())) && !isTokenExpired(token);
@@ -95,7 +68,7 @@ public class JwtService {
         .getBody();
   }
 
-  private Key getSignInKey() {
+  Key getSignInKey() {
 
     Dotenv dotenv = Dotenv.configure().ignoreIfMissing().ignoreIfMalformed().load();
     String key = dotenv.get("MY_SECRET_KEY");

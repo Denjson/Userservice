@@ -5,7 +5,7 @@ import java.util.Set;
 
 import com.study.userservice.dto.UserRequestDTO;
 import com.study.userservice.dto.UserResponseDTO;
-import com.study.userservice.entity.UserHistory;
+import com.study.userservice.dto.UserResponseFullDTO;
 
 public interface UserService {
 
@@ -37,7 +37,7 @@ public interface UserService {
 
   public List<UserResponseDTO> findByJPQL(String lastname);
 
-  public List<UserHistory> getUserLog();
+  public List<UserResponseFullDTO> getUserLog();
 
   public void addThreeTestUsers();
 

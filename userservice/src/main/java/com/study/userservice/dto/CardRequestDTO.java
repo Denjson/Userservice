@@ -5,6 +5,7 @@ import java.time.LocalDateTime;
 
 import org.springframework.data.redis.core.RedisHash;
 
+import jakarta.validation.constraints.Future;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotEmpty;
@@ -34,7 +35,10 @@ public class CardRequestDTO implements Serializable {
   @NotEmpty(message = "Holder name can not be a null or empty")
   private String holder;
 
+  @NotNull
+  @Future(message = "Expiration date must be in the future")
   private LocalDateTime expirationDate;
 
-  private boolean active;
+  @NotNull(message = "Active value can not be null")
+  private Boolean active;
 }
